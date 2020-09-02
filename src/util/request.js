@@ -1,13 +1,33 @@
 import axios from 'axios'
 import qs from 'qs'
-
+import store from "../store"
+import router from "../router"
 let baseUrl = '/api'
+
+//请求拦截
+axios.interceptors.request.use(config => {
+    //登录
+    if (config.url == baseUrl + "/api/userlogin") {
+        return config;
+    }
+
+    config.headers.authorization = store.state.user.info.token;
+    return config;
+})
+
 
 // 响应拦截
 axios.interceptors.response.use(res => {
     console.group("====本次请求的地址是：" + res.config.url + "======");
     console.log(res)
     console.groupEnd();
+    if (res.data.msg === "登录已过期或访问权限受限") {
+        alert("登录已过期或访问权限受限")
+        //清空info
+        store.dispatch("user/changeInfoAction", {})
+        //跳转到登录 
+        router.push("/login")
+    }
     return res
 })
 
@@ -16,11 +36,11 @@ axios.interceptors.response.use(res => {
 // *************************************menu******************************
 
 // 添加菜单
-export const reqMenuAdd = (aa) => {
+export const reqAddMenu = (form) => {
     return axios({
         url: baseUrl + "/api/menuadd",
-        method: "POST",
-        data: qs.stringify(aa)
+        method: "post",
+        data: qs.stringify(form)
     })
 }
 
@@ -73,7 +93,7 @@ export const reqRoleAdd = (aa) => {
     })
 }
 
-// 角色获取
+// 角色列表
 export const reqRoleList = () => {
     return axios({
         url: baseUrl + "/api/rolelist",
@@ -402,3 +422,99 @@ export const reqGoodsNum = () => {
 }
 
 /*----------------------轮播结束----------------------------------*/
+
+/*----------------------会员管理开始----------------------------------*/
+// 会员列表
+export const reqMberList = () => {
+    return axios({
+        url: baseUrl + "/api/memberlist",
+        method: "get",
+    })
+}
+
+//会员获取（一条）
+export const reqMberDetail = (params) => {
+    return axios({
+        url: baseUrl + "/api/memberinfo",
+        method: "get",
+        params: params
+    })
+}
+
+//会员修改
+export const reqMberUpdate = (form) => {
+    return axios({
+        url: baseUrl + "/api/memberedit",
+        method: "post",
+        data: qs.stringify(form)
+    })
+}
+/*----------------------会员管理结束----------------------------------*/
+
+
+
+
+/*----------------------登录开始----------------------------------*/
+
+// 管理员登录
+export const reqUserLogin = (form) => {
+    return axios({
+        url: baseUrl + "/api/userlogin",
+        method: "post",
+        data: qs.stringify(form)
+    })
+}
+
+/*----------------------登录结束----------------------------------*/
+
+
+/*----------------------秒杀开始----------------------------------*/
+
+//秒杀添加
+export const reqKillAdd = (form) => {
+
+    return axios({
+        url: baseUrl + "/api/seckadd",
+        method: "post",
+        data: qs.stringify(form)
+    })
+}
+
+//秒杀列表
+export const reqKillList = (params) => {
+    return axios({
+        url: baseUrl + "/api/secklist",
+        method: "get",
+        params
+    })
+}
+
+//秒杀详情
+export const reqKillDetail = (params) => {
+    return axios({
+        url: baseUrl + "/api/seckinfo",
+        method: "get",
+        params: params
+    })
+}
+
+//秒杀修改
+export const reqKillUpdate = (form) => {
+
+    return axios({
+        url: baseUrl + "/api/seckedit",
+        method: "post",
+        data: qs.stringify(form)
+    })
+}
+
+//秒杀删除 params={id:1}
+export const reqKillDel = (params) => {
+    return axios({
+        url: baseUrl + "api/seckdelete",
+        method: "post",
+        data: qs.stringify(params)
+    })
+}
+
+/*----------------------秒杀结束----------------------------------*/

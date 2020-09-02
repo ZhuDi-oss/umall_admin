@@ -6,14 +6,14 @@
           <el-input v-model="form.title" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="上级菜单" :label-width="formLabelWidth">
-          <el-select v-model="form.pid" placeholder="请选择活动区域">
+          <el-select v-model="form.pid" placeholder="请选择活动区域" @change="changePid">
             <el-option label="顶级菜单" :value="0"></el-option>
             <el-option v-for="item in list" :key="item.id" :label="item.title" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="菜单类型" :label-width="formLabelWidth">
-          <el-radio v-model="form.type" :label="1">目录</el-radio>
-          <el-radio v-model="form.type" :label="2">菜单</el-radio>
+          <el-radio v-model="form.type" :label="1" disabled>目录</el-radio>
+          <el-radio v-model="form.type" :label="2" disabled>菜单</el-radio>
         </el-form-item>
         <el-form-item label="菜单图标" :label-width="formLabelWidth" v-if="form.type==1">
           <el-select v-model="form.icon" placeholder="请选择图标">
@@ -56,7 +56,7 @@
 
 <script>
 import {
-  reqMenuAdd,
+  reqAddMenu,
   reqMenuDetail,
   reqMenuUpdate,
 } from "../../../util/request";
@@ -107,8 +107,12 @@ export default {
         status: 1,
       };
     },
+    //修改了pid
+    changePid() {
+      this.form.type = this.form.pid == 0 ? 1 : 2;
+    },
     add() {
-      reqMenuAdd(this.form).then((res) => {
+      reqAddMenu(this.form).then((res) => {
         if (res.data.code == 200) {
           alert("添加成功");
 
