@@ -25,6 +25,7 @@ export default {
   methods: {
     willAdd() {
       this.info.isShow = true;
+      this.info.isAdd = true;
     },
     emit(id) {
       this.info = {

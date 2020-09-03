@@ -39,7 +39,7 @@
 </template>
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { reqCateDel } from "../../../util/request";
+import { reqspecsDel } from "../../../util/request";
 import { successAlert, warningAlert } from "../../../util/alert";
 export default {
   components: {},
@@ -72,7 +72,7 @@ export default {
     //删除
     del(id) {
       //点击了确定，发起删除请求
-      reqCateDel({ id: id }).then((res) => {
+      reqspecsDel({ id: id }).then((res) => {
         if (res.data.code == 200) {
           successAlert("删除成功");
           this.reqList();

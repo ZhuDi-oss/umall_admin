@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
-        <el-form-item label="标题" :label-width="formLabelWidth">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="标题" :label-width="formLabelWidth" prop="title">
           <el-input v-model="form.title" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth">
+        <el-form-item label="图片" :label-width="formLabelWidth" :rules="rulimg">
           <div class="upload-box">
             <h3 class="upload-add">+</h3>
             <img class="upload-img" v-if="imgUrl" :src="imgUrl" alt />
@@ -19,7 +19,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">确 定</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">确 定</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -49,6 +49,9 @@ export default {
         title: "",
         img: "",
         status: 1,
+      },
+      rules: {
+        title: [{ required: true, message: "标题不能为空", trigger: "blur" }],
       },
     };
   },
@@ -83,11 +86,12 @@ export default {
     },
 
     //上传文件结束
-    close() {
+    close(formName) {
       // 如果是编辑，取消了，就要清空
-      if (!this.info.isAdd) {
-        this.empty();
-      }
+      // if (!this.info.isAdd) {
+      this.empty();
+      this.$refs[formName].resetFields();
+      // }
     },
     cancel() {
       this.info.isShow = false;
@@ -100,19 +104,25 @@ export default {
       };
       this.imgUrl = "";
     },
-    add() {
-      reqBannerAdd(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("添加成功");
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqBannerAdd(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("添加成功");
 
-          //添加弹框消失
-          this.cancel();
-          // 重置数据
-          this.empty();
-          //列表重新请求
-          this.reqList();
+              //添加弹框消失
+              this.cancel();
+              // 重置数据
+              this.empty();
+              //列表重新请求
+              this.reqList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },

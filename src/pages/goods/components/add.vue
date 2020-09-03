@@ -3,11 +3,11 @@
     <el-dialog
       :title="info.title"
       :visible.sync="info.isShow"
-      @closed="close"
+      @closed="close('form')"
       @opened="createEditor"
     >
-      <el-form :model="form">
-        <el-form-item label="一级分类" :label-width="formLabelWidth">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="一级分类" :label-width="formLabelWidth" prop="first_cateid">
           <el-select v-model="form.first_cateid" placeholder="请选择活动区域" @change="changeFirstId">
             <el-option label="--请选择--" value disabled></el-option>
             <el-option
@@ -18,7 +18,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="二级分类" :label-width="formLabelWidth">
+        <el-form-item label="二级分类" :label-width="formLabelWidth" prop="second_cateid"> 
           <el-select v-model="form.second_cateid" placeholder="请选择活动区域">
             <el-option label="--请选择--" value disabled></el-option>
             <el-option
@@ -30,16 +30,16 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="商品名称" :label-width="formLabelWidth">
+        <el-form-item label="商品名称" :label-width="formLabelWidth" prop="goodsname" >
           <el-input v-model="form.goodsname" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="价格" :label-width="formLabelWidth">
+        <el-form-item label="价格" :label-width="formLabelWidth" prop="price">
           <el-input v-model="form.price" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="市场价格" :label-width="formLabelWidth">
+        <el-form-item label="市场价格" :label-width="formLabelWidth" prop="market_price">
           <el-input v-model="form.market_price" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth" v-if="form.pid!=0">
+        <el-form-item label="图片" :label-width="formLabelWidth" v-if="form.pid!=0" >
           <div class="upload-box">
             <h3 class="upload-add">+</h3>
             <img class="upload-img" v-if="imgUrl" :src="imgUrl" alt />
@@ -47,7 +47,7 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="商品规格" :label-width="formLabelWidth">
+        <el-form-item label="商品规格" :label-width="formLabelWidth" prop="specsid">
           <el-select v-model="form.specsid" placeholder="请选择活动区域" @change="changeSpecId">
             <el-option label="--请选择--" value disabled></el-option>
             <el-option
@@ -58,14 +58,14 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="规格属性" :label-width="formLabelWidth">
+        <el-form-item label="规格属性" :label-width="formLabelWidth" prop="specsattr">
           <el-select v-model="form.specsattr" placeholder="请选择活动区域" multiple>
             <el-option label="--请选择--" value disabled></el-option>
             <el-option v-for="item in attrList" :key="item" :label="item" :value="item"></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="是否新品" :label-width="formLabelWidth">
+        <el-form-item label="是否新品" :label-width="formLabelWidth" >
           <el-radio :label="1" v-model="form.isnew">是</el-radio>
           <el-radio :label="2" v-model="form.isnew">否</el-radio>
         </el-form-item>
@@ -83,7 +83,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">确 定</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">确 定</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -130,6 +130,29 @@ export default {
         isnew: 1,
         ishot: 1,
         status: 1,
+      },
+      rules: {
+        first_cateid: [
+          { required: true, message: "请选择分类", trigger: "blur" },
+        ],
+        second_cateid: [
+          { required: true, message: "请选择分类", trigger: "blur" },
+        ],
+        goodsname: [
+          { required: true, message: "商品名称不能为空", trigger: "blur" },
+        ],
+        price: [
+          { required: true, message: "价格不能为空", trigger: "blur" },
+        ],
+        market_price: [
+          { required: true, message: "市场价格不能为空", trigger: "blur" },
+        ],
+        specsid: [
+          { required: true, message: "市场价格不能为空", trigger: "blur" },
+        ],
+        specsattr: [
+          { required: true, message: "市场价格不能为空", trigger: "blur" },
+        ],
       },
     };
   },
@@ -201,11 +224,12 @@ export default {
     },
 
     //上传文件结束
-    close() {
+    close(formName) {
+      this.$refs[formName].resetFields();
       // 如果是编辑，取消了，就要清空
-      if (!this.info.isAdd) {
-        this.empty();
-      }
+      // if (!this.info.isAdd) {
+      this.empty();
+      // }
     },
     cancel() {
       this.info.isShow = false;
@@ -234,21 +258,27 @@ export default {
         status: 1,
       };
     },
-    add() {
-      //取出富文本编辑器的内容，赋值给form的description
-      this.form.description = this.editor.txt.html();
-      reqGoodsAdd(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("添加成功");
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          //取出富文本编辑器的内容，赋值给form的description
+          this.form.description = this.editor.txt.html();
+          reqGoodsAdd(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("添加成功");
 
-          //添加弹框消失
-          this.cancel();
-          // 重置数据
-          this.empty();
-          //列表重新请求
-          this.reqList();
+              //添加弹框消失
+              this.cancel();
+              // 重置数据
+              this.empty();
+              //列表重新请求
+              this.reqList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },

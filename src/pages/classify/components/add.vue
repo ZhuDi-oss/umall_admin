@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
         <el-form-item label="上级分类" :label-width="formLabelWidth">
           <el-select v-model="form.pid" placeholder="请选择活动区域">
             <el-option label="顶级分类" :value="0"></el-option>
@@ -9,7 +9,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="分类名称" :label-width="formLabelWidth">
+        <el-form-item label="分类名称" :label-width="formLabelWidth" prop="catename">
           <el-input v-model="form.catename" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="图片" :label-width="formLabelWidth" v-if="form.pid!=0">
@@ -26,8 +26,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">确 定</el-button>
-        <el-button type="primary" @click="update" v-else>修 改</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">确 定</el-button>
+        <el-button type="primary" @click="update('form')" v-else>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -57,6 +57,11 @@ export default {
         catename: "",
         img: null,
         status: 1,
+      },
+      rules: {
+        catename: [
+          { required: true, message: "分类名称不能为空", trigger: "blur" },
+        ],
       },
     };
   },
@@ -98,7 +103,8 @@ export default {
     },
 
     //上传文件结束
-    close() {
+    close(formName) {
+      this.$refs[formName].resetFields();
       // 如果是编辑，取消了，就要清空
       if (!this.info.isAdd) {
         this.empty();
@@ -116,19 +122,25 @@ export default {
       };
       this.imgUrl = "";
     },
-    add() {
-      reqCateAdd(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("添加成功");
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqCateAdd(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("添加成功");
 
-          //添加弹框消失
-          this.cancel();
-          // 重置数据
-          this.empty();
-          //列表重新请求
-          this.reqList();
+              //添加弹框消失
+              this.cancel();
+              // 重置数据
+              this.empty();
+              //列表重新请求
+              this.reqList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },
@@ -136,19 +148,25 @@ export default {
       reqCateDetail({ id: id }).then((res) => {
         this.form = res.data.list;
         this.form.id = id;
-         this.imgUrl=this.$preImg+ res.data.list.img
+        this.imgUrl = this.$preImg + res.data.list.img;
       });
     },
-    update() {
-      reqCateUpdate(this.form).then((res) => {
-        console.log(res);
-        if (res.data.code == 200) {
-          alert("修改成功");
-          this.cancel();
-          this.empty();
-          this.reqList();
+    update(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqCateUpdate(this.form).then((res) => {
+            console.log(res);
+            if (res.data.code == 200) {
+              alert("修改成功");
+              this.cancel();
+              this.empty();
+              this.reqList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },

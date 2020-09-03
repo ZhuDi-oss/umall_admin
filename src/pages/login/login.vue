@@ -2,10 +2,17 @@
   <div class="login">
     <div class="con">
       <h3>登录</h3>
-      <el-input v-model="user.username" placeholder="请输入帐号" clearable></el-input>
-      <el-input v-model="user.password" placeholder="输入密码" clearable show-password></el-input>
+      <el-form :model="user" :rules="rules" status-icon ref="user">
+        <el-form-item prop="username">
+          <el-input v-model="user.username" placeholder="请输入帐号" clearable></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input v-model="user.password" placeholder="输入密码" clearable show-password></el-input>
+        </el-form-item>
+      </el-form>
+
       <div class="btn-box">
-        <el-button type="primary" @click="login">登录</el-button>
+        <el-button type="primary" @click="login('user')">登录</el-button>
       </div>
     </div>
   </div>
@@ -21,24 +28,40 @@ export default {
         username: "",
         password: "",
       },
+      rules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+        ],
+        password: [
+          { required: true, message: "请输入用户密码", trigger: "blur" },
+          { min: 3, max: 6, message: "长度在 3 到 6 个字符", trigger: "blur" },
+        ],
+      },
     };
   },
   methods: {
     ...mapActions({
       changeInfoAction: "user/changeInfoAction",
     }),
-    login() {
-      // this.$router.push("/");
-      reqUserLogin(this.user).then((res) => {
-        // 弹成功
-        if (res.data.code == 200) {
-          alert("登录成功");
-          // 将用户信息保存到vuex中
-          this.changeInfoAction(res.data.list)
-          // 跳转页面
-          this.$router.push("/");
+    login(formName) {
+      // 登录弹出提示
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          // this.$router.push("/");
+          reqUserLogin(this.user).then((res) => {
+            // 弹成功
+            if (res.data.code == 200) {
+              alert("登录成功");
+              // 将用户信息保存到vuex中
+              this.changeInfoAction(res.data.list);
+              // 跳转页面
+              this.$router.push("/");
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },

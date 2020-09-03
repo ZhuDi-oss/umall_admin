@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
-        <el-form-item label="所属角色" :label-width="width">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="所属角色" :label-width="width" prop="roleid">
           <el-select v-model="form.roleid">
             <el-option value label="--请选择--" disabled></el-option>
             <el-option
@@ -14,10 +14,10 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="用户名称" :label-width="width">
+        <el-form-item label="用户名称" :label-width="width" prop="username">
           <el-input v-model="form.username" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="密码" :label-width="width">
+        <el-form-item label="密码" :label-width="width" prop="password">
           <el-input v-model="form.password" autocomplete="off"></el-input>
         </el-form-item>
 
@@ -27,7 +27,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">添 加</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -57,6 +57,11 @@ export default {
         password: "",
         status: 1,
       },
+      rules: {
+        roleid: [{ required: true, message: "请选择角色", trigger: "blur" }],
+        username: [{ required: true, message: "用户名不能为空", trigger: "blur" }],
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+      },
     };
   },
   methods: {
@@ -67,7 +72,8 @@ export default {
     }),
 
     //弹框消失
-    close() {
+    close(formName) {
+       this.$refs[formName].resetFields()
       !this.info.isAdd && this.empty();
     },
 
@@ -87,19 +93,25 @@ export default {
     },
 
     //点击了添加按钮
-    add() {
-      reqUserAdd(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("添加成功");
-          //弹框消失
-          this.cancel();
-          //数据重置
-          this.empty();
-          //刷新角色列表的数据
-          this.reqUserList();
-          this.reqTotal();
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqUserAdd(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("添加成功");
+              //弹框消失
+              this.cancel();
+              //数据重置
+              this.empty();
+              //刷新角色列表的数据
+              this.reqUserList();
+              this.reqTotal();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },
@@ -128,7 +140,6 @@ export default {
         }
       });
     },
-
   },
   mounted() {
     //如果menuList数组是个空的，要发起请求得到

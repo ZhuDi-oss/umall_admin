@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-dialog title="添加角色" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
-        <el-form-item label="角色名称" :label-width="formLabelWidth">
+    <el-dialog title="添加角色" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="角色名称" :label-width="formLabelWidth" prop="rolename">
           <el-input v-model="form.rolename" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="角色权限" :label-width="formLabelWidth">
@@ -13,8 +13,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="enter" v-if="info.isAdd">添 加</el-button>
+        <el-button @click="cancel('form')">取 消</el-button>
+        <el-button type="primary" @click="enter('form')" v-if="info.isAdd">添 加</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -48,6 +48,11 @@ export default {
         children: "children",
         label: "title",
       },
+      rules: {
+        rolename: [
+          { required: true, message: "角色名称不能为空", trigger: "blur" },
+        ],
+      },
     };
   },
   methods: {
@@ -55,23 +60,30 @@ export default {
       reqMenuList: "menu/reqListAction",
       reqRoleList: "role/reqListAction",
     }),
-    update() {
-      this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-      reqRoleUpdate(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("修改成功");
-          //弹框消失
-          this.cancel();
-          //数据重置
-          this.reset();
-          //刷新角色列表的数据
-          this.reqRoleList();
+    update(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+          reqRoleUpdate(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("修改成功");
+              //弹框消失
+              this.cancel();
+              //数据重置
+              this.reset();
+              //刷新角色列表的数据
+              this.reqRoleList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },
-    close() {
+    close(formName) {
+      this.$refs[formName].resetFields();
       !this.info.isAdd && this.reset();
     },
     reset() {
@@ -84,19 +96,25 @@ export default {
       this.$refs.tree.setCheckedKeys([]);
     },
     cancel() {
+      
       this.info.isShow = false;
     },
-    enter() {
-      this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-
-      reqRoleAdd(this.form).then((res) => {
-        if (res.data.code === 200) {
-          alert("添加成功");
-          this.reset();
-          this.cancel();
-          this.reqRoleList();
+    enter(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+          reqRoleAdd(this.form).then((res) => {
+            if (res.data.code === 200) {
+              alert("添加成功");
+              this.reset();
+              this.cancel();
+              this.reqRoleList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },

@@ -511,7 +511,7 @@ export const reqKillUpdate = (form) => {
 //秒杀删除 params={id:1}
 export const reqKillDel = (params) => {
     return axios({
-        url: baseUrl + "api/seckdelete",
+        url: baseUrl + "/api/seckdelete",
         method: "post",
         data: qs.stringify(params)
     })

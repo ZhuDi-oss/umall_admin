@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
-        <el-form-item label="菜单名称" :label-width="formLabelWidth">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="菜单名称" :label-width="formLabelWidth" prop="title">
           <el-input v-model="form.title" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="上级菜单" :label-width="formLabelWidth">
@@ -15,7 +15,7 @@
           <el-radio v-model="form.type" :label="1" disabled>目录</el-radio>
           <el-radio v-model="form.type" :label="2" disabled>菜单</el-radio>
         </el-form-item>
-        <el-form-item label="菜单图标" :label-width="formLabelWidth" v-if="form.type==1">
+        <el-form-item label="菜单图标" :label-width="formLabelWidth" v-if="form.type==1" prop='icon'>
           <el-select v-model="form.icon" placeholder="请选择图标">
             <el-option value="el-icon-setting">
               <i class="el-icon-setting"></i>
@@ -47,8 +47,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">确 定</el-button>
-        <el-button type="primary" @click="update" v-else>修 改</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">确 定</el-button>
+        <el-button type="primary" @click="update('form')" v-else>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -81,6 +81,15 @@ export default {
         status: 1,
       },
       indexRoutes,
+      rules: {
+        title: [
+          { required: true, message: "菜单名称不能为空", trigger: "blur" },
+        ],
+        icon:[
+          { required: true, message: "请选择分类", trigger: "blur" },
+        ]
+
+      },
     };
   },
 
@@ -88,7 +97,8 @@ export default {
     ...mapActions({
       reqList: "menu/reqListAction",
     }),
-    close() {
+    close(formName) {
+      this.$refs[formName].resetFields()
       // 如果是编辑，取消了，就要清空
       if (!this.info.isAdd) {
         this.empty();
@@ -96,6 +106,7 @@ export default {
     },
     cancel() {
       this.info.isShow = false;
+      
     },
     empty() {
       this.form = {
@@ -111,19 +122,26 @@ export default {
     changePid() {
       this.form.type = this.form.pid == 0 ? 1 : 2;
     },
-    add() {
-      reqAddMenu(this.form).then((res) => {
-        if (res.data.code == 200) {
-          alert("添加成功");
+    add(formName) {
+      // 登录弹出提示
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqAddMenu(this.form).then((res) => {
+            if (res.data.code == 200) {
+              alert("添加成功");
 
-          //添加弹框消失
-          this.cancel();
-          // 重置数据
-          this.empty();
-          //列表重新请求
-          this.reqList();
+              //添加弹框消失
+              this.cancel();
+              // 重置数据
+              this.empty();
+              //列表重新请求
+              this.reqList();
+            } else {
+              alert(res.data.msg);
+            }
+          });
         } else {
-          alert(res.data.msg);
+          return false;
         }
       });
     },
@@ -133,16 +151,22 @@ export default {
         this.form.id = id;
       });
     },
-    update() {
-      reqMenuUpdate(this.form).then((res) => {
-        console.log(res);
-        if (res.data.code == 200) {
-          alert("修改成功");
-          this.cancel();
-          this.empty();
-          this.reqList();
+    update(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          reqMenuUpdate(this.form).then((res) => {
+            console.log(res);
+            if (res.data.code == 200) {
+              alert("修改成功");
+              this.cancel();
+              this.empty();
+              this.reqList();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },

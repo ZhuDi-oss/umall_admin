@@ -6,10 +6,9 @@
       row-key="id"
       border
     >
-      <el-table-column prop="id" label="角色编号" sortable width="180"></el-table-column>
-      <el-table-column prop="rolename" label="角色名称" sortable width="180"></el-table-column>
+      <el-table-column prop="title" label="活动名称" sortable width="150"></el-table-column>
 
-      <el-table-column label="状态">
+      <el-table-column label="状态" width="180">
         <template slot-scope="scope">
           <el-button type="primary" v-if="scope.row.status==1">启用</el-button>
           <el-button type="info" v-else>禁用</el-button>
@@ -28,16 +27,16 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { reqRoleDel } from "../../../util/request";
+import { reqKillDel } from "../../../util/request";
 export default {
   computed: {
     ...mapGetters({
-      list: "role/list",
+      list: "seckill/list",
     }),
   },
   methods: {
     ...mapActions({
-      reqList: "role/reqListAction",
+      reqList: "seckill/reqListAction",
     }),
     edit(id) {
       this.$emit("edit", id);
@@ -48,13 +47,14 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
       }).then(() => {
-        reqRoleDel({ id: id }).then((res) => {
+        reqKillDel({ id: id }).then((res) => {
           if (res.data.code == 200) {
             alert("删除成功");
             this.reqList();
           } else {
             alert(res.data.msg);
           }
+          console.log(res)
         });
       });
     },

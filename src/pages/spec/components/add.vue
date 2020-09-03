@@ -1,8 +1,8 @@
 <template>
   <div class="add">
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-      <el-form :model="form">
-        <el-form-item label="规格名称" :label-width="width">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close('form')">
+      <el-form :model="form" :rules="rules" status-icon ref="form">
+        <el-form-item label="规格名称" :label-width="width" prop="specsname">
           <el-input v-model="form.specsname" autocomplete="off"></el-input>
         </el-form-item>
 
@@ -29,7 +29,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="add('form')" v-if="info.isAdd">添 加</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -63,6 +63,11 @@ export default {
         attrs: "",
         status: 1,
       },
+      rules: {
+        specsname: [
+          { required: true, message: "规格名称不能为空", trigger: "blur" },
+        ],
+      },
     };
   },
   methods: {
@@ -82,11 +87,12 @@ export default {
     },
 
     //弹框关闭完成
-    close() {
+    close(formName) {
+      this.$refs[formName].resetFields();
       // 如果是编辑，取消了，就要清空
-      if (!this.info.isAdd) {
+      // if (!this.info.isAdd) {
         this.empty();
-      }
+      // }
     },
     //点击了取消
     cancel() {
@@ -103,23 +109,31 @@ export default {
       this.attrArr = [{ value: "" }];
     },
     //添加
-    add() {
-      //attrArr=[{value:"1"},{value:"2"},{value:"3"}] -->["1","2","3"]
-      this.form.attrs = JSON.stringify(this.attrArr.map((item) => item.value));
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          //attrArr=[{value:"1"},{value:"2"},{value:"3"}] -->["1","2","3"]
+          this.form.attrs = JSON.stringify(
+            this.attrArr.map((item) => item.value)
+          );
 
-      reqspecsAdd(this.form).then((res) => {
-        if (res.data.code == 200) {
-          //添加成功
-          successAlert(res.data.msg);
-          //弹框消失
-          this.$emit("hide");
-          //数据重置
-          this.empty();
-          //重新获取list
-          this.reqList();
-          this.reqTotal();
+          reqspecsAdd(this.form).then((res) => {
+            if (res.data.code == 200) {
+              //添加成功
+              successAlert(res.data.msg);
+              //弹框消失
+              this.$emit("hide");
+              //数据重置
+              this.empty();
+              //重新获取list
+              this.reqList();
+              this.reqTotal();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },

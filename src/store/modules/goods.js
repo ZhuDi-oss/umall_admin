@@ -31,11 +31,12 @@ const mutations = {
 
 const actions = {
   //请求
-  reqListAction(context) {
-    reqGoodsList({
+  reqListAction(context,bool) {
+    let params = bool ? {} : {
       page: context.state.page,
       size: context.state.size
-    }).then(res => {
+    }
+    reqGoodsList(params).then(res => {
       let arr = res.data.list ? res.data.list : []
       context.commit("changeList", arr)
     })
