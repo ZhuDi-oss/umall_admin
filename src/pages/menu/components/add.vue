@@ -31,7 +31,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="菜单地址" :label-width="formLabelWidth" v-else>
+        <el-form-item label="菜单地址" :label-width="formLabelWidth" v-else prop='url'>
           <el-select v-model="form.url" placeholder="请选择地址">
             <el-option
               v-for="item in indexRoutes"
@@ -87,7 +87,10 @@ export default {
         ],
         icon:[
           { required: true, message: "请选择分类", trigger: "blur" },
-        ]
+        ],
+        url:[
+          { required: true, message: "请选择分类", trigger: "blur" },
+        ],
 
       },
     };

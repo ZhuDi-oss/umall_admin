@@ -5,7 +5,7 @@
         <el-form-item label="角色名称" :label-width="formLabelWidth" prop="rolename">
           <el-input v-model="form.rolename" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="角色权限" :label-width="formLabelWidth">
+        <el-form-item label="角色权限" :label-width="formLabelWidth" prop="menus">
           <el-tree ref="tree" :data="menuList" show-checkbox node-key="id" :props="defaultProps"></el-tree>
         </el-form-item>
         <el-form-item label="角色状态" :label-width="formLabelWidth">
@@ -15,7 +15,7 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel('form')">取 消</el-button>
         <el-button type="primary" @click="enter('form')" v-if="info.isAdd">添 加</el-button>
-        <el-button type="primary" @click="update" v-else>修 改</el-button>
+        <el-button type="primary" @click="update('form')" v-else>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -37,7 +37,15 @@ export default {
     }),
   },
   data() {
+    var validatePass = (rule, value, callback) => {
+      if (this.$refs.tree.getCheckedKeys().length <= 0) {
+        return callback(new Error("选项不能为空"));
+      } else {
+        callback();
+      }
+    };
     return {
+      adb: false,
       form: {
         rolename: "",
         menus: [],
@@ -51,6 +59,15 @@ export default {
       rules: {
         rolename: [
           { required: true, message: "角色名称不能为空", trigger: "blur" },
+        ],
+        menus: [
+          {
+            required: true,
+            validator: validatePass,
+
+            // message: "角色名称不能为空",
+            trigger: "blur",
+          },
         ],
       },
     };
@@ -96,13 +113,14 @@ export default {
       this.$refs.tree.setCheckedKeys([]);
     },
     cancel() {
-      
+      // console.log(this.$refs.tree.getCheckedKeys());
       this.info.isShow = false;
     },
     enter(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+          console.log(this.form.menus);
           reqRoleAdd(this.form).then((res) => {
             if (res.data.code === 200) {
               alert("添加成功");

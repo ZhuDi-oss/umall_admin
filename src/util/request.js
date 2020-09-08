@@ -406,7 +406,7 @@ export const reqGoodsUpdate = (form) => {
 //商品删除 params={id:1}
 export const reqGoodsDel = (params) => {
     return axios({
-        url: baseUrl + "/api/bannerdelete",
+        url: baseUrl + "/api/goodsdelete",
         method: "post",
         data: qs.stringify(params)
     })

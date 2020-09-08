@@ -52,7 +52,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { reqCateDel } from "../../../util/request";
+import { reqGoodsDel } from "../../../util/request";
 
 export default {
   data() {
@@ -81,29 +81,16 @@ export default {
       this.$emit("emit", id);
     },
     del(id) {
-      this.$confirm("你确定要删除吗?", "提示", {
-        confirmButtonText: "删除",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(() => {
-          //点击了确定，发起删除请求
-          reqCateDel({ id: id }).then((res) => {
-            if (res.data.code == 200) {
-              alert("删除成功");
-              this.reqList();
-              this.reqTotal();
-            } else {
-              alert(res.data.msg);
-            }
-          });
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除",
-          });
-        });
+      //点击了确定，发起删除请求
+      reqGoodsDel({ id: id }).then((res) => {
+        if (res.data.code == 200) {
+          alert("删除成功");
+          this.reqTotal();
+          this.changePageAction(1);
+        } else {
+          alert(res.data.msg);
+        }
+      });
     },
   },
 

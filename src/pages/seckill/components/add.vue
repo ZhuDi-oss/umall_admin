@@ -7,16 +7,14 @@
         </el-form-item>
 
         <el-form-item label="活动期限" :label-width="formLabelWidth" prop="begintime">
-          <el-time-select
-            placeholder="起始时间"
-            v-model="form.begintime"
-            :picker-options="{start: '08:30',step: '00:15',end: '18:30'}"
-          ></el-time-select>
-          <el-time-select
-            placeholder="结束时间"
-            v-model="form.endtime"
-            :picker-options="{start: '08:30',step: '00:15',end: '18:30',minTime: form.begintime}"
-          ></el-time-select>
+          <div class="wrap_aaa">
+            <div class="block">
+              <el-date-picker v-model="form.begintime" type="date" placeholder="开始时间" value-format="timestamp"></el-date-picker>
+            </div>
+            <div class="block">
+              <el-date-picker v-model="form.endtime" type="date" placeholder="开始时间" value-format="timestamp"></el-date-picker>
+            </div>
+          </div>
         </el-form-item>
         <el-form-item label="一级分类" :label-width="formLabelWidth" prop="first_cateid">
           <el-select v-model="form.first_cateid" placeholder="请选择活动区域" @change="changeFirstId">
@@ -113,14 +111,10 @@ export default {
         second_cateid: [
           { required: true, message: "请选择分类", trigger: "blur" },
         ],
-        goodsid: [
-          { required: true, message: "请选择商品", trigger: "blur" },
-        ],
+        goodsid: [{ required: true, message: "请选择商品", trigger: "blur" }],
         begintime: [
           { required: true, message: "请选择起始时间", trigger: "blur" },
         ],
-      
-        
       },
     };
   },
@@ -232,5 +226,11 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.wrap_aaa {
+  display: flex;
+}
+.el-input {
+  margin-right: 20px;
+}
 </style>

@@ -18,7 +18,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="二级分类" :label-width="formLabelWidth" prop="second_cateid"> 
+        <el-form-item label="二级分类" :label-width="formLabelWidth" prop="second_cateid">
           <el-select v-model="form.second_cateid" placeholder="请选择活动区域">
             <el-option label="--请选择--" value disabled></el-option>
             <el-option
@@ -30,7 +30,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="商品名称" :label-width="formLabelWidth" prop="goodsname" >
+        <el-form-item label="商品名称" :label-width="formLabelWidth" prop="goodsname">
           <el-input v-model="form.goodsname" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="价格" :label-width="formLabelWidth" prop="price">
@@ -39,7 +39,7 @@
         <el-form-item label="市场价格" :label-width="formLabelWidth" prop="market_price">
           <el-input v-model="form.market_price" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图片" :label-width="formLabelWidth" v-if="form.pid!=0" >
+        <el-form-item label="图片" :label-width="formLabelWidth" v-if="form.pid!=0">
           <div class="upload-box">
             <h3 class="upload-add">+</h3>
             <img class="upload-img" v-if="imgUrl" :src="imgUrl" alt />
@@ -65,7 +65,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="是否新品" :label-width="formLabelWidth" >
+        <el-form-item label="是否新品" :label-width="formLabelWidth">
           <el-radio :label="1" v-model="form.isnew">是</el-radio>
           <el-radio :label="2" v-model="form.isnew">否</el-radio>
         </el-form-item>
@@ -141,9 +141,7 @@ export default {
         goodsname: [
           { required: true, message: "商品名称不能为空", trigger: "blur" },
         ],
-        price: [
-          { required: true, message: "价格不能为空", trigger: "blur" },
-        ],
+        price: [{ required: true, message: "价格不能为空", trigger: "blur" }],
         market_price: [
           { required: true, message: "市场价格不能为空", trigger: "blur" },
         ],
@@ -165,6 +163,7 @@ export default {
       reqSpecList: "spec/reqListAction",
       //获取商品列表
       reqList: "goods/reqListAction",
+      reqTotal: "goods/reqListNum",
     }),
     // 修改了一级分类
     changeFirstId() {
@@ -266,10 +265,10 @@ export default {
           reqGoodsAdd(this.form).then((res) => {
             if (res.data.code == 200) {
               alert("添加成功");
-
               //添加弹框消失
               this.cancel();
               // 重置数据
+              this.reqTotal();
               this.empty();
               //列表重新请求
               this.reqList();
